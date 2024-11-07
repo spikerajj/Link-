@@ -1,0 +1,74 @@
+npm install primeng primeicons
+
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+import { DropdownModule } from 'primeng/dropdown';
+import { DialogModule } from 'primeng/dialog';
+import { FormsModule } from '@angular/forms';  // For ngModel binding
+
+
+module ts
+@NgModule({
+  declarations: [
+    AppComponent
+  ],
+  imports: [
+    BrowserModule,
+    DropdownModule,
+    DialogModule,
+    FormsModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+
+
+
+<p-dropdown 
+  [options]="dropdownOptions" 
+  [(ngModel)]="selectedOption" 
+  (onChange)="onDropdownChange()"
+  placeholder="Select an option">
+</p-dropdown>
+
+<p-dialog header="Information" [(visible)]="dialogVisible" [closable]="true">
+  <p>Selected option details: {{ selectedOption?.name }}</p>
+</p-dialog>
+
+
+
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  dropdownOptions = [
+    { label: 'Option 1', value: { id: 1, name: 'Option 1 Details' } },
+    { label: 'Option 2', value: { id: 2, name: 'Option 2 Details' } },
+    { label: 'Option 3', value: { id: 3, name: 'Option 3 Details' } }
+  ];
+
+  selectedOption: any;
+  dialogVisible: boolean = false;
+
+  onDropdownChange() {
+    // Show the dialog when a value is selected
+    this.dialogVisible = true;
+  }
+}
+
+
+
+/* app.component.css */
+p-dropdown {
+  width: 200px;
+}
+
+p-dialog {
+  width: 400px;
+}
