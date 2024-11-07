@@ -1,0 +1,155 @@
+npm install primeng primeicons
+
+
+module 
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+import { DropdownModule } from 'primeng/dropdown';
+import { DialogModule } from 'primeng/dialog';
+import { FormsModule } from '@angular/forms';
+
+@NgModule({
+  declarations: [
+    AppComponent
+  ],
+  imports: [
+    BrowserModule,
+    DropdownModule,
+    DialogModule,
+    FormsModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+
+
+html 
+
+<div class="dropdown-container">
+  <p-dropdown 
+    [options]="countries" 
+    [(ngModel)]="selectedCountry" 
+    (onChange)="onCountryChange()"
+    placeholder="Select a country">
+  </p-dropdown>
+
+  <p-dropdown 
+    [options]="states" 
+    [(ngModel)]="selectedState" 
+    (onChange)="onStateChange()"
+    [disabled]="!selectedCountry"
+    placeholder="Select a state">
+  </p-dropdown>
+
+  <p-dropdown 
+    [options]="cities" 
+    [(ngModel)]="selectedCity" 
+    (onChange)="onCityChange()"
+    [disabled]="!selectedState"
+    placeholder="Select a city">
+  </p-dropdown>
+</div>
+
+<p-dialog header="City Information" [(visible)]="dialogVisible" [closable]="true">
+  <div *ngIf="selectedCity">
+    <p>Name: {{ selectedCity?.name }}</p>
+    <p>Population: {{ selectedCity?.population }}</p>
+    <p>Region: {{ selectedCity?.region }}</p>
+    <p>Popular Landmark: {{ selectedCity?.landmark }}</p>
+  </div>
+</p-dialog>
+
+
+ts
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  // Data for countries, states, and cities
+  countries = [
+    { label: 'USA', value: 'USA' },
+    { label: 'Canada', value: 'Canada' },
+  ];
+
+  states: any[] = [];
+  cities: any[] = [];
+  selectedCountry: string | null = null;
+  selectedState: string | null = null;
+  selectedCity: any = null;
+  dialogVisible: boolean = false;
+
+  // Country-State mapping
+  countryStateData = {
+    'USA': [
+      { label: 'California', value: 'California' },
+      { label: 'Texas', value: 'Texas' }
+    ],
+    'Canada': [
+      { label: 'Ontario', value: 'Ontario' },
+      { label: 'Quebec', value: 'Quebec' }
+    ]
+  };
+
+  // State-City mapping with unique city data
+  stateCityData = {
+    'California': [
+      { label: 'Los Angeles', value: { name: 'Los Angeles', population: '4M', region: 'West Coast', landmark: 'Hollywood Sign' } },
+      { label: 'San Francisco', value: { name: 'San Francisco', population: '800K', region: 'West Coast', landmark: 'Golden Gate Bridge' } }
+    ],
+    'Texas': [
+      { label: 'Houston', value: { name: 'Houston', population: '2M', region: 'South', landmark: 'Space Center Houston' } },
+      { label: 'Dallas', value: { name: 'Dallas', population: '1.3M', region: 'South', landmark: 'Dallas Arboretum' } }
+    ],
+    'Ontario': [
+      { label: 'Toronto', value: { name: 'Toronto', population: '3M', region: 'Central Canada', landmark: 'CN Tower' } },
+      { label: 'Ottawa', value: { name: 'Ottawa', population: '1M', region: 'Central Canada', landmark: 'Parliament Hill' } }
+    ],
+    'Quebec': [
+      { label: 'Montreal', value: { name: 'Montreal', population: '1.7M', region: 'Eastern Canada', landmark: 'Mount Royal' } },
+      { label: 'Quebec City', value: { name: 'Quebec City', population: '500K', region: 'Eastern Canada', landmark: 'Old Quebec' } }
+    ]
+  };
+
+  // Handler for country change
+  onCountryChange() {
+    this.states = this.countryStateData[this.selectedCountry] || [];
+    this.selectedState = null;
+    this.cities = [];
+  }
+
+  // Handler for state change
+  onStateChange() {
+    this.cities = this.stateCityData[this.selectedState] || [];
+    this.selectedCity = null;
+  }
+
+  // Handler for city change
+  onCityChange() {
+    if (this.selectedCity) {
+      // Show the dialog with the selected city's unique details
+      this.dialogVisible = true;
+    }
+  }
+}
+
+/* app.component.css */
+.dropdown-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 300px;
+}
+
+p-dropdown {
+  width: 100%;
+}
+
+p-dialog {
+  width: 400px;
+}
