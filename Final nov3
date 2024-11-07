@@ -1,3 +1,214 @@
+To create a dependent dropdown with **Country**, **State**, and **City** selections in Angular using **PrimeNG**, where selecting a city triggers a different popup dialog for each city, follow the steps below.
+
+### Scenario:
+- **Country Dropdown**: Selecting a country updates the available states.
+- **State Dropdown**: Selecting a state updates the available cities.
+- **City Dropdown**: Selecting a city triggers a popup dialog with details unique to that city.
+
+---
+
+### Step 1: Install PrimeNG and PrimeIcons
+Make sure you have PrimeNG and PrimeIcons installed in your Angular project:
+
+```bash
+npm install primeng primeicons
+```
+
+### Step 2: Import Required PrimeNG Modules
+In your `app.module.ts`, import the necessary PrimeNG modules for dropdown and dialog functionality:
+
+```typescript
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+import { DropdownModule } from 'primeng/dropdown';
+import { DialogModule } from 'primeng/dialog';
+import { FormsModule } from '@angular/forms';
+
+@NgModule({
+  declarations: [
+    AppComponent
+  ],
+  imports: [
+    BrowserModule,
+    DropdownModule,
+    DialogModule,
+    FormsModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+
+### Step 3: Component Setup
+Create cascading dropdowns for **Country**, **State**, and **City**, and display a dialog with unique information for the selected city.
+
+#### HTML Template (`app.component.html`):
+
+```html
+<div class="dropdown-container">
+  <p-dropdown 
+    [options]="countries" 
+    [(ngModel)]="selectedCountry" 
+    (onChange)="onCountryChange()"
+    placeholder="Select a country">
+  </p-dropdown>
+
+  <p-dropdown 
+    [options]="states" 
+    [(ngModel)]="selectedState" 
+    (onChange)="onStateChange()"
+    [disabled]="!selectedCountry"
+    placeholder="Select a state">
+  </p-dropdown>
+
+  <p-dropdown 
+    [options]="cities" 
+    [(ngModel)]="selectedCity" 
+    (onChange)="onCityChange()"
+    [disabled]="!selectedState"
+    placeholder="Select a city">
+  </p-dropdown>
+</div>
+
+<p-dialog header="City Information" [(visible)]="dialogVisible" [closable]="true">
+  <div *ngIf="selectedCity">
+    <p>Name: {{ selectedCity?.name }}</p>
+    <p>Population: {{ selectedCity?.population }}</p>
+    <p>Region: {{ selectedCity?.region }}</p>
+    <p>Popular Landmark: {{ selectedCity?.landmark }}</p>
+  </div>
+</p-dialog>
+```
+
+#### TypeScript Component (`app.component.ts`):
+
+```typescript
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  // Data for countries, states, and cities
+  countries = [
+    { label: 'USA', value: 'USA' },
+    { label: 'Canada', value: 'Canada' },
+  ];
+
+  states: any[] = [];
+  cities: any[] = [];
+  selectedCountry: string | null = null;
+  selectedState: string | null = null;
+  selectedCity: any = null;
+  dialogVisible: boolean = false;
+
+  // Country-State mapping
+  countryStateData = {
+    'USA': [
+      { label: 'California', value: 'California' },
+      { label: 'Texas', value: 'Texas' }
+    ],
+    'Canada': [
+      { label: 'Ontario', value: 'Ontario' },
+      { label: 'Quebec', value: 'Quebec' }
+    ]
+  };
+
+  // State-City mapping with unique city data
+  stateCityData = {
+    'California': [
+      { label: 'Los Angeles', value: { name: 'Los Angeles', population: '4M', region: 'West Coast', landmark: 'Hollywood Sign' } },
+      { label: 'San Francisco', value: { name: 'San Francisco', population: '800K', region: 'West Coast', landmark: 'Golden Gate Bridge' } }
+    ],
+    'Texas': [
+      { label: 'Houston', value: { name: 'Houston', population: '2M', region: 'South', landmark: 'Space Center Houston' } },
+      { label: 'Dallas', value: { name: 'Dallas', population: '1.3M', region: 'South', landmark: 'Dallas Arboretum' } }
+    ],
+    'Ontario': [
+      { label: 'Toronto', value: { name: 'Toronto', population: '3M', region: 'Central Canada', landmark: 'CN Tower' } },
+      { label: 'Ottawa', value: { name: 'Ottawa', population: '1M', region: 'Central Canada', landmark: 'Parliament Hill' } }
+    ],
+    'Quebec': [
+      { label: 'Montreal', value: { name: 'Montreal', population: '1.7M', region: 'Eastern Canada', landmark: 'Mount Royal' } },
+      { label: 'Quebec City', value: { name: 'Quebec City', population: '500K', region: 'Eastern Canada', landmark: 'Old Quebec' } }
+    ]
+  };
+
+  // Handler for country change
+  onCountryChange() {
+    this.states = this.countryStateData[this.selectedCountry] || [];
+    this.selectedState = null;
+    this.cities = [];
+  }
+
+  // Handler for state change
+  onStateChange() {
+    this.cities = this.stateCityData[this.selectedState] || [];
+    this.selectedCity = null;
+  }
+
+  // Handler for city change
+  onCityChange() {
+    if (this.selectedCity) {
+      // Show the dialog with the selected city's unique details
+      this.dialogVisible = true;
+    }
+  }
+}
+```
+
+### Step 4: Style Customization (Optional)
+
+Add custom styling for the dropdowns and dialog to enhance the appearance.
+
+```css
+/* app.component.css */
+.dropdown-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 300px;
+}
+
+p-dropdown {
+  width: 100%;
+}
+
+p-dialog {
+  width: 400px;
+}
+```
+
+### Explanation:
+
+1. **Country Dropdown**: 
+   - When the country is selected, the `onCountryChange()` method is triggered, which updates the states for the selected country. It resets the selected state and city.
+
+2. **State Dropdown**:
+   - When the state is selected, the `onStateChange()` method updates the available cities for the selected state. It resets the selected city.
+
+3. **City Dropdown**:
+   - When a city is selected, the `onCityChange()` method is triggered. It opens the dialog (`p-dialog`) with the unique information of the selected city (such as name, population, region, and landmark).
+
+4. **Dialog**:
+   - The dialog (`p-dialog`) shows details such as the **name**, **population**, **region**, and **landmark** of the selected city.
+   - The `dialogVisible` flag controls the visibility of the dialog, which is set to `true` when a city is selected.
+
+### Step 5: Test and Extend
+
+- You can easily extend this by adding more countries, states, and cities to the data objects (`countryStateData`, `stateCityData`).
+- For each city, you can add more unique attributes like **area**, **timezone**, etc., and display them in the dialog.
+
+### Conclusion:
+This approach allows you to create a cascading dependent dropdown menu in Angular using PrimeNG, where selecting a city triggers a unique popup dialog displaying specific information related to that city. This solution is flexible and can be extended with additional data or customized to meet specific requirements.
+
+
+
+
 npm install primeng primeicons
 
 
