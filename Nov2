@@ -144,3 +144,267 @@ export class AppComponent {
   }
 }
 
+
+
+To create a **dependent dropdown** with **Country**, **State**, and **City** selections in Angular using **PrimeNG**, where selecting a city triggers a different component in a **popup dialog** based on the selected city, we will need to do the following:
+
+- **Country Dropdown**: When a country is selected, the available states should be updated.
+- **State Dropdown**: When a state is selected, the available cities should be updated.
+- **City Dropdown**: When a city is selected, it triggers a **popup dialog** with **different components** for each city using PrimeNG's **Dialog** component.
+
+### Steps:
+
+1. **Create the main component** with the cascading dropdowns for **Country**, **State**, and **City**.
+2. **Display a popup dialog** when a city is selected.
+3. **Different component for each selected city** will be shown in the dialog.
+
+### Step 1: Install PrimeNG and PrimeIcons
+
+First, make sure you have **PrimeNG** and **PrimeIcons** installed in your Angular project:
+
+```bash
+npm install primeng primeicons
+```
+
+### Step 2: Import PrimeNG Modules in `app.module.ts`
+
+In your `app.module.ts`, import the necessary modules for the dropdown and dialog.
+
+```typescript
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+import { DropdownModule } from 'primeng/dropdown';
+import { DialogModule } from 'primeng/dialog';
+import { FormsModule } from '@angular/forms';
+import { CityDetailsComponent } from './city-details/city-details.component'; // New component for city details
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    CityDetailsComponent  // Declare the city details component
+  ],
+  imports: [
+    BrowserModule,
+    DropdownModule,
+    DialogModule,
+    FormsModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+
+### Step 3: Create the City Details Component
+
+Now, create a component (`city-details.component.ts`) to display different information depending on the selected city.
+
+```bash
+ng generate component city-details
+```
+
+#### `city-details.component.ts`:
+
+This component will display different details depending on the selected city.
+
+```typescript
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'app-city-details',
+  templateUrl: './city-details.component.html',
+  styleUrls: ['./city-details.component.css']
+})
+export class CityDetailsComponent {
+  @Input() city: any;
+
+  constructor() { }
+}
+```
+
+#### `city-details.component.html`:
+
+This will display the details for each selected city.
+
+```html
+<div *ngIf="city">
+  <h2>City: {{ city.name }}</h2>
+  <p>Population: {{ city.population }}</p>
+  <p>Region: {{ city.region }}</p>
+  <p>Landmark: {{ city.landmark }}</p>
+</div>
+```
+
+### Step 4: Create the Main Component with Dropdowns and Dialog
+
+In the main component (`app.component.ts`), we will handle the cascading dropdowns and display the city details component inside the **Dialog** based on the selected city.
+
+#### `app.component.ts`:
+
+```typescript
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  // Data for countries, states, and cities
+  countries = [
+    { label: 'USA', value: 'USA' },
+    { label: 'Canada', value: 'Canada' },
+  ];
+
+  states: any[] = [];
+  cities: any[] = [];
+  selectedCountry: string | null = null;
+  selectedState: string | null = null;
+  selectedCity: any = null;
+  dialogVisible: boolean = false;
+
+  // Country-State mapping
+  countryStateData = {
+    'USA': [
+      { label: 'California', value: 'California' },
+      { label: 'Texas', value: 'Texas' }
+    ],
+    'Canada': [
+      { label: 'Ontario', value: 'Ontario' },
+      { label: 'Quebec', value: 'Quebec' }
+    ]
+  };
+
+  // State-City mapping with unique city data
+  stateCityData = {
+    'California': [
+      { label: 'Los Angeles', value: { name: 'Los Angeles', population: '4M', region: 'West Coast', landmark: 'Hollywood Sign' } },
+      { label: 'San Francisco', value: { name: 'San Francisco', population: '800K', region: 'West Coast', landmark: 'Golden Gate Bridge' } }
+    ],
+    'Texas': [
+      { label: 'Houston', value: { name: 'Houston', population: '2M', region: 'South', landmark: 'Space Center Houston' } },
+      { label: 'Dallas', value: { name: 'Dallas', population: '1.3M', region: 'South', landmark: 'Dallas Arboretum' } }
+    ],
+    'Ontario': [
+      { label: 'Toronto', value: { name: 'Toronto', population: '3M', region: 'Central Canada', landmark: 'CN Tower' } },
+      { label: 'Ottawa', value: { name: 'Ottawa', population: '1M', region: 'Central Canada', landmark: 'Parliament Hill' } }
+    ],
+    'Quebec': [
+      { label: 'Montreal', value: { name: 'Montreal', population: '1.7M', region: 'Eastern Canada', landmark: 'Mount Royal' } },
+      { label: 'Quebec City', value: { name: 'Quebec City', population: '500K', region: 'Eastern Canada', landmark: 'Old Quebec' } }
+    ]
+  };
+
+  // Handler for country change
+  onCountryChange() {
+    this.states = this.countryStateData[this.selectedCountry] || [];
+    this.selectedState = null;
+    this.cities = [];
+    this.selectedCity = null;
+  }
+
+  // Handler for state change
+  onStateChange() {
+    this.cities = this.stateCityData[this.selectedState] || [];
+    this.selectedCity = null;
+  }
+
+  // Handler for city change
+  onCityChange() {
+    // Show dialog with the selected city's details
+    this.dialogVisible = true;
+  }
+
+  // Close the dialog
+  closeDialog() {
+    this.dialogVisible = false;
+  }
+}
+```
+
+#### `app.component.html`:
+
+This will contain the cascading dropdowns for **Country**, **State**, and **City**, and show the **CityDetailsComponent** inside a dialog when a city is selected.
+
+```html
+<div class="dropdown-container">
+  <p-dropdown 
+    [options]="countries" 
+    [(ngModel)]="selectedCountry" 
+    (onChange)="onCountryChange()"
+    placeholder="Select a country">
+  </p-dropdown>
+
+  <p-dropdown 
+    [options]="states" 
+    [(ngModel)]="selectedState" 
+    (onChange)="onStateChange()"
+    [disabled]="!selectedCountry"
+    placeholder="Select a state">
+  </p-dropdown>
+
+  <p-dropdown 
+    [options]="cities" 
+    [(ngModel)]="selectedCity" 
+    (onChange)="onCityChange()"
+    [disabled]="!selectedState"
+    placeholder="Select a city">
+  </p-dropdown>
+</div>
+
+<!-- Dialog to show city details -->
+<p-dialog header="City Details" [(visible)]="dialogVisible" [closable]="true" (onHide)="closeDialog()">
+  <app-city-details *ngIf="selectedCity" [city]="selectedCity"></app-city-details>
+</p-dialog>
+```
+
+### Step 5: Style Customization (Optional)
+
+You can add some basic styles for the dropdowns and dialog.
+
+```css
+/* app.component.css */
+.dropdown-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 300px;
+}
+
+p-dropdown {
+  width: 100%;
+}
+
+p-dialog {
+  width: 400px;
+}
+```
+
+---
+
+### Explanation:
+
+1. **Country Dropdown**: 
+   - When a country is selected, the `onCountryChange()` method updates the states based on the selected country.
+
+2. **State Dropdown**:
+   - When a state is selected, the `onStateChange()` method updates the cities based on the selected state.
+
+3. **City Dropdown**:
+   - When a city is selected, the `onCityChange()` method is triggered, which opens a dialog containing the details of the selected city.
+
+4. **CityDetailsComponent**:
+   - The `CityDetailsComponent` displays the details of the city (such as population, region, and landmark) based on the selected city passed through the `@Input` decorator.
+
+5. **Dialog**:
+   - The **PrimeNG Dialog** component (`p-dialog`) shows up when a city is selected. The dialog's visibility is controlled by the `dialogVisible` boolean variable.
+
+6. **Dialog Closure**: 
+   - The `closeDialog()` method is used to close the dialog when the user closes it.
+
+---
+
+### Conclusion:
+
+This solution demonstrates how to create a **dependent dropdown** in Angular using **PrimeNG**, where selecting a city triggers a **different component** (in this case, `CityDetailsComponent`) to be displayed inside a **popup dialog**. This solution uses **Angular's input binding** to dynamically pass the selected city's data into the dialog component, which is a clean and modular
