@@ -1,0 +1,421 @@
+npm install primeng primeicons
+
+
+module 
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+import { DropdownModule } from 'primeng/dropdown';
+import { FormsModule } from '@angular/forms';
+import { CityDetailsComponent } from './city-details/city-details.component'; // New component for city details
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    CityDetailsComponent  // Declare the city details component
+  ],
+  imports: [
+    BrowserModule,
+    DropdownModule,
+    FormsModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+
+ng generate component city-details
+
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'app-city-details',
+  templateUrl: './city-details.component.html',
+  styleUrls: ['./city-details.component.css']
+})
+export class CityDetailsComponent {
+  @Input() city: any;
+
+  constructor() { }
+
+}
+
+
+
+city-details.component.html:
+<div *ngIf="city">
+  <h2>City: {{ city.name }}</h2>
+  <p>Population: {{ city.population }}</p>
+  <p>Region: {{ city.region }}</p>
+  <p>Landmark: {{ city.landmark }}</p>
+</div>
+
+
+app component 
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  // Data for countries, states, and cities
+  countries = [
+    { label: 'USA', value: 'USA' },
+    { label: 'Canada', value: 'Canada' },
+  ];
+
+  states: any[] = [];
+  cities: any[] = [];
+  selectedCountry: string | null = null;
+  selectedState: string | null = null;
+  selectedCity: any = null;
+
+  // Country-State mapping
+  countryStateData = {
+    'USA': [
+      { label: 'California', value: 'California' },
+      { label: 'Texas', value: 'Texas' }
+    ],
+    'Canada': [
+      { label: 'Ontario', value: 'Ontario' },
+      { label: 'Quebec', value: 'Quebec' }
+    ]
+  };
+
+  // State-City mapping with unique city data
+  stateCityData = {
+    'California': [
+      { label: 'Los Angeles', value: { name: 'Los Angeles', population: '4M', region: 'West Coast', landmark: 'Hollywood Sign' } },
+      { label: 'San Francisco', value: { name: 'San Francisco', population: '800K', region: 'West Coast', landmark: 'Golden Gate Bridge' } }
+    ],
+    'Texas': [
+      { label: 'Houston', value: { name: 'Houston', population: '2M', region: 'South', landmark: 'Space Center Houston' } },
+      { label: 'Dallas', value: { name: 'Dallas', population: '1.3M', region: 'South', landmark: 'Dallas Arboretum' } }
+    ],
+    'Ontario': [
+      { label: 'Toronto', value: { name: 'Toronto', population: '3M', region: 'Central Canada', landmark: 'CN Tower' } },
+      { label: 'Ottawa', value: { name: 'Ottawa', population: '1M', region: 'Central Canada', landmark: 'Parliament Hill' } }
+    ],
+    'Quebec': [
+      { label: 'Montreal', value: { name: 'Montreal', population: '1.7M', region: 'Eastern Canada', landmark: 'Mount Royal' } },
+      { label: 'Quebec City', value: { name: 'Quebec City', population: '500K', region: 'Eastern Canada', landmark: 'Old Quebec' } }
+    ]
+  };
+
+  // Handler for country change
+  onCountryChange() {
+    this.states = this.countryStateData[this.selectedCountry] || [];
+    this.selectedState = null;
+    this.cities = [];
+    this.selectedCity = null;
+  }
+
+  // Handler for state change
+  onStateChange() {
+    this.cities = this.stateCityData[this.selectedState] || [];
+    this.selectedCity = null;
+  }
+
+  // Handler for city change
+  onCityChange() {
+    // City selected, no action needed here as CityDetailsComponent will be updated via input binding
+  }
+}
+
+<div class="dropdown-container">
+  <p-dropdown 
+    [options]="countries" 
+    [(ngModel)]="selectedCountry" 
+    (onChange)="onCountryChange()"
+    placeholder="Select a country">
+  </p-dropdown>
+
+  <p-dropdown 
+    [options]="states" 
+    [(ngModel)]="selectedState" 
+    (onChange)="onStateChange()"
+    [disabled]="!selectedCountry"
+    placeholder="Select a state">
+  </p-dropdown>
+
+  <p-dropdown 
+    [options]="cities" 
+    [(ngModel)]="selectedCity" 
+    (onChange)="onCityChange()"
+    [disabled]="!selectedState"
+    placeholder="Select a city">
+  </p-dropdown>
+</div>
+
+<!-- Display city details component -->
+<app-city-details *ngIf="selectedCity" [city]="selectedCity"></app-city-details>
+
+/* app.component.css */
+.dropdown-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 300px;
+}
+
+p-dropdown {
+  width: 100%;
+}
+
+app-city-details {
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+
+
+
+To implement a **dependent dropdown** with **Country**, **State**, and **City** selections in Angular using **PrimeNG**, where selecting a city triggers the display of a different component for each selected city, we will use **Angular's Component Communication** through `@Input`, `@Output`, or **Routing**.
+
+In this example, I will demonstrate how to trigger different components based on the selected city, using **component switching** without routing.
+
+### Scenario:
+1. **Country Dropdown**: Selecting a country updates the available states.
+2. **State Dropdown**: Selecting a state updates the available cities.
+3. **City Dropdown**: Selecting a city triggers the display of a **different component** for that city.
+
+---
+
+### Step 1: Install PrimeNG and PrimeIcons
+
+First, install **PrimeNG** and **PrimeIcons** if you haven't already:
+
+```bash
+npm install primeng primeicons
+```
+
+### Step 2: Set Up PrimeNG in `app.module.ts`
+
+Make sure to import the necessary PrimeNG modules for the dropdown and dialog functionality.
+
+```typescript
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppComponent } from './app.component';
+import { DropdownModule } from 'primeng/dropdown';
+import { FormsModule } from '@angular/forms';
+import { CityDetailsComponent } from './city-details/city-details.component'; // New component for city details
+
+@NgModule({
+  declarations: [
+    AppComponent,
+    CityDetailsComponent  // Declare the city details component
+  ],
+  imports: [
+    BrowserModule,
+    DropdownModule,
+    FormsModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+
+### Step 3: Create the City Details Component
+
+Create a component (`city-details.component.ts`) to display different information depending on the selected city.
+
+```bash
+ng generate component city-details
+```
+
+#### `city-details.component.ts`:
+
+```typescript
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'app-city-details',
+  templateUrl: './city-details.component.html',
+  styleUrls: ['./city-details.component.css']
+})
+export class CityDetailsComponent {
+  @Input() city: any;
+
+  constructor() { }
+
+}
+```
+
+#### `city-details.component.html`:
+
+This component will display different details depending on the selected city.
+
+```html
+<div *ngIf="city">
+  <h2>City: {{ city.name }}</h2>
+  <p>Population: {{ city.population }}</p>
+  <p>Region: {{ city.region }}</p>
+  <p>Landmark: {{ city.landmark }}</p>
+</div>
+```
+
+### Step 4: Create the Main Component with Dropdowns
+
+In the main component (`app.component.ts`), we will handle the cascading dropdowns and the display of the `CityDetailsComponent` based on the selected city.
+
+#### `app.component.ts`:
+
+```typescript
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  // Data for countries, states, and cities
+  countries = [
+    { label: 'USA', value: 'USA' },
+    { label: 'Canada', value: 'Canada' },
+  ];
+
+  states: any[] = [];
+  cities: any[] = [];
+  selectedCountry: string | null = null;
+  selectedState: string | null = null;
+  selectedCity: any = null;
+
+  // Country-State mapping
+  countryStateData = {
+    'USA': [
+      { label: 'California', value: 'California' },
+      { label: 'Texas', value: 'Texas' }
+    ],
+    'Canada': [
+      { label: 'Ontario', value: 'Ontario' },
+      { label: 'Quebec', value: 'Quebec' }
+    ]
+  };
+
+  // State-City mapping with unique city data
+  stateCityData = {
+    'California': [
+      { label: 'Los Angeles', value: { name: 'Los Angeles', population: '4M', region: 'West Coast', landmark: 'Hollywood Sign' } },
+      { label: 'San Francisco', value: { name: 'San Francisco', population: '800K', region: 'West Coast', landmark: 'Golden Gate Bridge' } }
+    ],
+    'Texas': [
+      { label: 'Houston', value: { name: 'Houston', population: '2M', region: 'South', landmark: 'Space Center Houston' } },
+      { label: 'Dallas', value: { name: 'Dallas', population: '1.3M', region: 'South', landmark: 'Dallas Arboretum' } }
+    ],
+    'Ontario': [
+      { label: 'Toronto', value: { name: 'Toronto', population: '3M', region: 'Central Canada', landmark: 'CN Tower' } },
+      { label: 'Ottawa', value: { name: 'Ottawa', population: '1M', region: 'Central Canada', landmark: 'Parliament Hill' } }
+    ],
+    'Quebec': [
+      { label: 'Montreal', value: { name: 'Montreal', population: '1.7M', region: 'Eastern Canada', landmark: 'Mount Royal' } },
+      { label: 'Quebec City', value: { name: 'Quebec City', population: '500K', region: 'Eastern Canada', landmark: 'Old Quebec' } }
+    ]
+  };
+
+  // Handler for country change
+  onCountryChange() {
+    this.states = this.countryStateData[this.selectedCountry] || [];
+    this.selectedState = null;
+    this.cities = [];
+    this.selectedCity = null;
+  }
+
+  // Handler for state change
+  onStateChange() {
+    this.cities = this.stateCityData[this.selectedState] || [];
+    this.selectedCity = null;
+  }
+
+  // Handler for city change
+  onCityChange() {
+    // City selected, no action needed here as CityDetailsComponent will be updated via input binding
+  }
+}
+```
+
+#### `app.component.html`:
+
+This will contain the cascading dropdowns for **Country**, **State**, and **City**, and display the `CityDetailsComponent` when a city is selected.
+
+```html
+<div class="dropdown-container">
+  <p-dropdown 
+    [options]="countries" 
+    [(ngModel)]="selectedCountry" 
+    (onChange)="onCountryChange()"
+    placeholder="Select a country">
+  </p-dropdown>
+
+  <p-dropdown 
+    [options]="states" 
+    [(ngModel)]="selectedState" 
+    (onChange)="onStateChange()"
+    [disabled]="!selectedCountry"
+    placeholder="Select a state">
+  </p-dropdown>
+
+  <p-dropdown 
+    [options]="cities" 
+    [(ngModel)]="selectedCity" 
+    (onChange)="onCityChange()"
+    [disabled]="!selectedState"
+    placeholder="Select a city">
+  </p-dropdown>
+</div>
+
+<!-- Display city details component -->
+<app-city-details *ngIf="selectedCity" [city]="selectedCity"></app-city-details>
+```
+
+### Step 5: Style Customization (Optional)
+
+Add some basic styles to the dropdown container and other elements.
+
+```css
+/* app.component.css */
+.dropdown-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 300px;
+}
+
+p-dropdown {
+  width: 100%;
+}
+
+app-city-details {
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid #ddd;
+}
+```
+
+---
+
+### Explanation:
+
+1. **Country Dropdown**:
+   - When a country is selected, the `onCountryChange()` method is called. It updates the available states based on the selected country, and clears the selected state and city.
+
+2. **State Dropdown**:
+   - When a state is selected, the `onStateChange()` method is called. It updates the available cities based on the selected state and clears the selected city.
+
+3. **City Dropdown**:
+   - When a city is selected, the `selectedCity` is updated. This triggers the `CityDetailsComponent` to display the details of the selected city using **Angular's input binding** (`[city]="selectedCity"`).
+
+4. **CityDetailsComponent**:
+   - This component receives the `selectedCity` object via the `@Input()` decorator. It then displays the details of the city (like name, population, region, and landmark).
+
+---
+
+### Conclusion:
+
+This solution demonstrates how to create a **dependent dropdown** for **Country**, **State**, and **City** selections in Angular using PrimeNG, where selecting a city triggers the display of a **different component** (`CityDetailsComponent`) with unique information for each city. 
+
+The `CityDetailsComponent` is displayed conditionally based on the selected city, and the information is passed dynamically using Angular's `@Input` binding. This is an effective and modular way to handle dynamic content based on user selection.
