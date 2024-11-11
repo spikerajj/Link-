@@ -1,3 +1,35 @@
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  selectedOption: string;  // Variable to store the selected value from dropdown
+  displayDialog1: boolean = false;  // Flag to show Dialog 1
+  displayDialog2: boolean = false;  // Flag to show Dialog 2
+
+  // Define options for the dropdown
+  options: any[] = [
+    { label: 'Select Dialog', value: null },
+    { label: 'Dialog 1', value: 'dialog1' },
+    { label: 'Dialog 2', value: 'dialog2' }
+  ];
+
+  // Open the appropriate dialog based on selected option
+  openDialog() {
+    if (this.selectedOption === 'dialog1') {
+      this.displayDialog1 = true;  // Open Dialog 1 if 'dialog1' is selected
+    } else if (this.selectedOption === 'dialog2') {
+      this.displayDialog2 = true;  // Open Dialog 2 if 'dialog2' is selected
+    }
+  }
+}
+
+
+
+
 https://drive.google.com/file/d/1RzYw8sz6mLAXro2yFLWlgXqUt90sNQaE/view?usp=drivesdk
 
 https://drive.google.com/file/d/1rTvR70n2uvmDUx-xKWewW2OGBn53HdYt/view?usp=drivesdk
